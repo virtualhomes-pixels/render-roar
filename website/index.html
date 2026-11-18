@@ -2,34 +2,23 @@
 <html lang="en">
 
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>Render Roar | 360° Virtual Tour</title>
 
-
     <!-- PANNELLUM CSS -->
-
     <link
         rel="stylesheet"
         href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css"
     >
 
-
     <!-- PANNELLUM JAVASCRIPT -->
-
     <script
         src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"
     ></script>
 
-    
     <style>
-
 
         /* =========================================
            BASIC PAGE
@@ -37,17 +26,11 @@
 
         html,
         body {
-
             margin: 0;
-
             width: 100%;
-
             height: 100%;
-
             overflow: hidden;
-
             background: #000;
-
         }
 
 
@@ -56,11 +39,8 @@
         ========================================= */
 
         #panorama {
-
             width: 100%;
-
             height: 100%;
-
         }
 
 
@@ -69,33 +49,22 @@
         ========================================= */
 
         #instruction {
-
             position: absolute;
-
             top: 20px;
-
             left: 50%;
-
             transform: translateX(-50%);
-
             padding: 10px 18px;
-
             background: rgba(0, 0, 0, 0.55);
-
             color: white;
-
             font-family: Arial, sans-serif;
-
             font-size: 14px;
-
             border-radius: 20px;
-
             z-index: 10;
-
             pointer-events: none;
-
             transition: opacity 0.5s;
-
+            max-width: calc(100vw - 40px);
+            box-sizing: border-box;
+            text-align: center;
         }
 
 
@@ -104,41 +73,38 @@
         ========================================= */
 
         #destinations {
-
             position: absolute;
-
             bottom: 20px;
-
             left: 50%;
-
             transform: translateX(-50%);
-
             display: flex;
-
             gap: 8px;
-
             padding: 8px;
-
             background: rgba(0, 0, 0, 0.75);
-
             border-radius: 6px;
-
             z-index: 40;
 
+            /* never wider than the screen - scrolls instead */
+            max-width: calc(100vw - 40px);
+            overflow-x: auto;
+            box-sizing: border-box;
         }
+
         #toggle-destinations {
-    position: static;
-    width: 36px;
-    min-width: 36px;
-    height: 60px;
-    align-self: center;
-    border: none;
-    border-radius: 5px;
-    background: rgba(255, 255, 255, 0.15);
-    color: white;
-    font-size: 24px;
-    cursor: pointer;
-}
+            position: sticky;
+            right: 0;
+            flex-shrink: 0;
+            width: 36px;
+            min-width: 36px;
+            height: 60px;
+            align-self: center;
+            border: none;
+            border-radius: 5px;
+            background: rgba(60, 60, 60, 0.95);
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+        }
 
 
         /* =========================================
@@ -146,24 +112,17 @@
         ========================================= */
 
         .destination {
-
             width: 110px;
-
+            flex-shrink: 0;
             cursor: pointer;
-
             position: relative;
-
             transition:
                 transform 0.2s ease,
                 opacity 0.2s ease;
-
         }
 
-
         .destination:hover {
-
             transform: scale(1.05);
-
         }
 
 
@@ -172,17 +131,11 @@
         ========================================= */
 
         .destination img {
-
             width: 110px;
-
             height: 70px;
-
             object-fit: cover;
-
             display: block;
-
             border-radius: 3px;
-
         }
 
 
@@ -191,29 +144,17 @@
         ========================================= */
 
         .destination-name {
-
             position: absolute;
-
             bottom: 0;
-
             left: 0;
-
             right: 0;
-
             padding: 5px 4px;
-
             background: rgba(0, 0, 0, 0.65);
-
             color: white;
-
             font-family: Arial, sans-serif;
-
             font-size: 12px;
-
             text-align: center;
-
             border-radius: 0 0 3px 3px;
-
         }
 
 
@@ -222,13 +163,218 @@
         ========================================= */
 
         .destination.current {
-
             outline: 3px solid white;
-
             outline-offset: 2px;
-
             transform: scale(1.05);
+        }
 
+
+        /* =========================================
+           WELCOME SCREEN
+        ========================================= */
+
+        #welcome-screen {
+            position: fixed;
+            inset: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.35);
+        }
+
+        .welcome-content {
+            text-align: center;
+            color: white;
+            padding: 25px;
+            animation: welcomeFade 1.2s ease-out;
+        }
+
+        .welcome-content h1 {
+            font-size: clamp(18px, 3vw, 32px);
+            margin-bottom: 25px;
+            text-align: center;
+            padding: 0 15px;
+        }
+
+        #start-tour {
+            padding: 15px 38px;
+            font-size: 16px;
+            font-weight: 600;
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            border-radius: 30px;
+            background: white;
+            color: #111;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        #start-tour:hover {
+            background: transparent;
+            color: white;
+            transform: scale(1.05);
+        }
+
+        @keyframes welcomeFade {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+
+        /* =========================================
+           MINI MAP
+        ========================================= */
+
+        #mini-map {
+            position: fixed;
+            left: 20px;
+            bottom: 120px;                      /* sits above the thumbnail bar */
+            width: clamp(220px, 26vw, 350px);   /* scales with the screen */
+            padding: 8px;
+            box-sizing: border-box;
+            background: rgba(0, 0, 0, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 10px;
+            z-index: 50;
+        }
+
+        #map-title {
+            color: white;
+            font-family: Arial, sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            text-align: center;
+            margin: 0 0 4px;
+        }
+
+        /* image + markers share this box, so marker % = image % */
+        #map-stage {
+            position: relative;
+        }
+
+        #map-stage img {
+            display: block;
+            width: 100%;
+            height: auto;
+            border-radius: 5px;
+        }
+
+        #room-markers {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+        }
+
+        #map-toggle {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 28px;
+            height: 28px;
+            border: none;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.75);
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            z-index: 2;
+        }
+
+        #mini-map.collapsed {
+            width: auto;
+            padding: 4px;
+        }
+
+        #mini-map.collapsed #map-title,
+        #mini-map.collapsed #map-stage {
+            display: none;
+        }
+
+        #mini-map.collapsed #map-toggle {
+            position: static;
+            display: block;
+        }
+
+
+        /* =========================================
+           ROOM MARKERS
+        ========================================= */
+
+        .room-marker {
+            position: absolute;
+            width: 0;
+            height: 0;
+            border: 2px solid transparent;
+            border-radius: 5px;
+            background: transparent;
+            box-sizing: border-box;
+            transition: 0.3s;
+        }
+
+        .room-marker.active {
+            width: 20px;
+            height: 20px;
+            background: white;
+            border: 7px solid #168BFF;
+            border-radius: 50%;
+            box-shadow: 0 0 8px rgba(22, 139, 255, 0.7);
+            transform: translate(-50%, -50%);
+        }
+
+        /* ROOM POSITIONS (% of the map image)
+           NOTE: these were tuned for the old layout - nudge once if needed */
+
+        .room-marker[data-scene="mbr"]      { left: 84%; top: 65%; }
+        .room-marker[data-scene="br1"]      { left: 71%; top: 21%; }
+        .room-marker[data-scene="br2"]      { left: 51%; top: 21%; }
+        .room-marker[data-scene="living"]   { left: 11%; top: 35%; }
+        .room-marker[data-scene="dining"]   { left: 28%; top: 27%; }
+        .room-marker[data-scene="hallway"]  { left: 50%; top: 49%; }
+        .room-marker[data-scene="kitchen"]  { left: 27%; top: 67%; }
+        .room-marker[data-scene="bathroom"] { left: 54%; top: 70%; }
+        .room-marker[data-scene="utility"]  { left: 43%; top: 70%; }
+
+        #mini-map.collapsed .room-marker {
+            display: none;
+        }
+
+
+        /* =========================================
+           LARGE SCREENS
+        ========================================= */
+
+        @media (min-width: 2000px) {
+
+            .destination {
+                width: 140px;
+            }
+
+            #destinations {
+                gap: 12px;
+                padding: 12px;
+            }
+
+            .destination-name {
+                font-size: 18px;
+                padding: 7px 4px;
+            }
+
+            .destination img {
+                width: 100%;
+                height: 100px;
+                object-fit: cover;
+            }
+
+            #mini-map {
+                bottom: 160px;
+            }
         }
 
 
@@ -238,304 +384,27 @@
 
         @media (max-width: 600px) {
 
-            #destinations {
-
-                max-width: calc(100% - 20px);
-
-                overflow-x: auto;
-
-                justify-content: flex-start;
-
-            }
-
-
             .destination {
-
-                flex-shrink: 0;
-
                 width: 90px;
-
             }
-
 
             .destination img {
-
                 width: 90px;
-
                 height: 60px;
-
             }
 
+            #mini-map {
+                width: 200px;
+                bottom: 10px;
+                left: 10px;
+                padding: 5px;
+            }
+
+            #map-title {
+                font-size: 10px;
+            }
         }
 
-
-@media (min-width: 2000px) {
-    .destination {
-        width: 140px;
-    }
-
-    #destinations {
-        gap: 12px;
-        padding: 12px;
-    }
-    .destination-name {
-        font-size: 18px;
-        padding: 7px 4px;
-    }
-    .destination img {
-    width: 100%;
-    height: 100px;
-    object-fit: cover;
-}
-}
-#welcome-screen {
-    position: fixed;
-    inset: 0;
-    z-index: 100;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(0, 0, 0, 0.35);
-}
-
-.welcome-content {
-    text-align: center;
-    color: white;
-    padding: 25px;
-}
-
-.welcome-content h1 {
-    font-size: clamp(18px, 3vw, 32px);
-    margin-bottom: 25px;
-    text-align: center;
-    padding: 0 15px;
-}
-#start-tour {
-    padding: 15px 38px;
-    font-size: 16px;
-    font-weight: 600;
-    border: 1px solid rgba(255,255,255,0.8);
-    border-radius: 30px;
-    background: white;
-    color: #111;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-#start-tour:hover {
-    background: transparent;
-    color: white;
-    transform: scale(1.05);
-}
-.welcome-content {
-    animation: welcomeFade 1.2s ease-out;
-}
-
-@keyframes welcomeFade {
-    from {
-        opacity: 0;
-        transform: translateY(15px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-#mini-map {
-    position: fixed;
-    bottom: 20px;
-    left: 20px;
-    width: 350px;
-    height: 260px;
-    background: rgba(0, 0, 0, 0.85);
-    border: 1px solid rgba(255, 255, 255, 0.5);
-    border-radius: 10px;
-    padding: 8px;
-    z-index: 50;
-}
-
-#mini-map img {
-    display: block;
-    width: 100%;
-    height: 260px;
-    object-fit: contain;
-    border-radius: 5px;
-}
-
-#map-toggle {
-    position: absolute;
-    top: 5px;
-    right: 5px;
-    width: 28px;
-    height: 28px;
-    border: none;
-    border-radius: 50%;
-    background: rgba(0, 0, 0, 0.75);
-    color: white;
-    font-size: 20px;
-    cursor: pointer;
-    z-index: 2;
-}
-#mini-map.collapsed img {
-    display: none;
-}
-
-#mini-map.collapsed {
-    width: 36px;
-    height: 36px;
-    padding: 4px;
-}
-#map-title {
-    color: white;
-    font-size: 13px;
-    font-weight: 600;
-    letter-spacing: 1.5px;
-    text-align: center;
-    padding: 0 0 2px;
-    margin: 0;
-}
-#mini-map.collapsed {
-    width: auto;
-    height: auto;
-    min-width: 40px;
-    min-height: 40px;
-    padding: 4px;
-}
-
-#mini-map.collapsed #map-title,
-#mini-map.collapsed img {
-    display: none;
-}
-
-#mini-map.collapsed #map-toggle {
-    position: static;
-    display: block;
-    margin: 0 auto;
-}
-#mini-map.collapsed {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-#mini-map.collapsed #map-toggle {
-    position: static;
-    margin: 0;
-}
-#mini-map {
-    position: fixed;
-}
-
-#room-markers {
-    position: absolute;
-    left: 8px;
-    right: 8px;
-    top: 65px;
-    bottom: 8px;
-    pointer-events: none;
-}
-
-.room-marker {
-    position: absolute;
-    border: 2px solid transparent;
-    border-radius: 5px;
-    background: transparent;
-    box-sizing: border-box;
-    transition: 0.3s;
-}
-.room-marker.active {
-    width: 20px;
-    height: 20px;
-    background: white;
-    border: 7px solid #168BFF;
-    border-radius: 50%;
-    box-shadow: 0 0 8px rgba(22, 139, 255, 0.7);
-    transform: translate(-50%, -50%);
-}
-/* INITIAL ROOM POSITIONS */
-
-.room-marker[data-scene="mbr"] {
-    left: 84%;
-    top: 65%;
-    width: 0;
-    height: 0;
-}
-
-.room-marker[data-scene="br1"] {
-    left: 71%;
-    top: 21%;
-    width: 0;
-    height: 0;
-}
-
-.room-marker[data-scene="br2"] {
-    left: 51%;
-    top: 21%;
-    width: 0;
-    height: 0;
-}
-
-.room-marker[data-scene="living"] {
-    left: 11%;
-    top: 35%;
-    width: 0;
-    height: 0;
-}
-
-.room-marker[data-scene="dining"] {
-    left: 28%;
-    top: 27%;
-    width: 0;
-    height: 0%;
-}
-
-.room-marker[data-scene="hallway"] {
-    left: 50%;
-    top: 49%;
-    width: 0%;
-    height: 0;
-}
-
-.room-marker[data-scene="kitchen"] {
-    left: 27%;
-    top: 67%;
-    width: 0;
-    height: 0;
-}
-
-.room-marker[data-scene="bathroom"] {
-    left: 54%;
-    top: 70%;
-    width: 0;
-    height: 0;
-}
-
-.room-marker[data-scene="utility"] {
-    left: 43%;
-    top: 70%;
-    width: 0;
-    height: 0;
-}
-#mini-map.collapsed .room-marker {
-    display: none;
-}
-@media (max-width: 600px) {
-    #mini-map {
-        width: 200px;
-        height: 130px;
-        bottom: 10px;
-        left: 10px;
-        padding: 5px;
-    }
-
-    #mini-map img {
-        height: 130px;
-    }
-
-    #map-title {
-        font-size: 10px;
-    }
-}
     </style>
 
 </head>
@@ -543,35 +412,39 @@
 
 <body>
 
-
     <!-- =========================================
          PANORAMA
     ========================================== -->
 
     <div id="panorama"></div>
+
     <div id="mini-map">
-    <button id="map-toggle" type="button">−</button>
-    <div id="map-title">MINI MAP</div>
-    <img src="panos/floor-map.webp" alt="Apartment floor plan">
-    <div id="room-markers">
-    <div class="room-marker" data-scene="living"></div>
-    <div class="room-marker" data-scene="dining"></div>
-    <div class="room-marker" data-scene="kitchen"></div>
-    <div class="room-marker" data-scene="utility"></div>
-    <div class="room-marker" data-scene="hallway"></div>
-    <div class="room-marker" data-scene="bathroom"></div>
-    <div class="room-marker" data-scene="mbr"></div>
-    <div class="room-marker" data-scene="br1"></div>
-    <div class="room-marker" data-scene="br2"></div>
-</div>
-</div>
-    <button id="toggle-destinations" type="button">⌄</button>
-    <div id="welcome-screen">
-    <div class="welcome-content">
-        <h1>Click to Explore Your Virtual Tour</h1>
-        <button id="start-tour">Start Tour</button>
+        <button id="map-toggle" type="button">−</button>
+        <div id="map-title">MINI MAP</div>
+        <div id="map-stage">
+            <img src="panos/floor-map.webp" alt="Apartment floor plan">
+            <div id="room-markers">
+                <div class="room-marker" data-scene="living"></div>
+                <div class="room-marker" data-scene="dining"></div>
+                <div class="room-marker" data-scene="kitchen"></div>
+                <div class="room-marker" data-scene="utility"></div>
+                <div class="room-marker" data-scene="hallway"></div>
+                <div class="room-marker" data-scene="bathroom"></div>
+                <div class="room-marker" data-scene="mbr"></div>
+                <div class="room-marker" data-scene="br1"></div>
+                <div class="room-marker" data-scene="br2"></div>
+            </div>
+        </div>
     </div>
-</div>
+
+    <button id="toggle-destinations" type="button">⌄</button>
+
+    <div id="welcome-screen">
+        <div class="welcome-content">
+            <h1>Click to Explore Your Virtual Tour</h1>
+            <button id="start-tour">Start Tour</button>
+        </div>
+    </div>
 
 
     <!-- =========================================
@@ -579,9 +452,7 @@
     ========================================== -->
 
     <div id="instruction">
-
         Drag to look around • Select a room below to explore
-
     </div>
 
 
@@ -594,99 +465,90 @@
 
     <script>
 
-
         /* =========================================
            CURRENT LOCATION
         ========================================= */
 
         let currentScene = "living";
-        function updateMiniMap() {
-    document.querySelectorAll(".room-marker").forEach(marker => {
-        marker.classList.toggle(
-            "active",
-            marker.dataset.scene === currentScene
-        );
-    });
-}
 
-updateMiniMap();
+        function updateMiniMap() {
+            document.querySelectorAll(".room-marker").forEach(marker => {
+                marker.classList.toggle(
+                    "active",
+                    marker.dataset.scene === currentScene
+                );
+            });
+        }
+
+        updateMiniMap();
+
+
+        /* =========================================
+           RESPONSIVE FIELD OF VIEW
+           Phones: fixed values.
+           Tablet / laptop: calculated from the
+           screen's aspect ratio so there is no
+           heavy edge stretching.
+        ========================================= */
+
+        function getHfov() {
+            const w = window.innerWidth;
+            const aspect = w / window.innerHeight;
+
+            /* Target VERTICAL view in degrees.
+               Phones (tall, narrow screens) use a bigger number
+               - raise it to zoom IN more, lower it to zoom OUT. */
+            const isPhone = w <= 600;
+            const targetVfov = isPhone ? 80 : 70;
+
+            const vfov = targetVfov * Math.PI / 180;
+            const hfov = 2 * Math.atan(Math.tan(vfov / 2) * aspect) * 180 / Math.PI;
+
+            const minAllowed = isPhone ? 35 : 60;
+            const maxAllowed = isPhone ? 75 : 110;
+
+            return Math.round(Math.min(maxAllowed, Math.max(minAllowed, hfov)));
+        }
+
+        const responsiveHfov = getHfov();
 
 
         /* =========================================
            CREATE PANNELLUM VIEWER
         ========================================= */
-const responsiveHfov =
-    window.innerWidth <= 350 ? 60 :
-    window.innerWidth <= 400 ? 65 :
-    window.innerWidth <= 600 ? 70 :
-    window.innerWidth <= 1200 ? 95 :
-    115;
+
         const viewer = pannellum.viewer(
             "panorama",
             {
 
                 default: {
-
                     firstScene: "living",
-
-                    sceneFadeDuration: 1200
-
+                    sceneFadeDuration: 1200,
+                    minHfov: 30,   /* Pannellum's default minimum is 50, which blocks zooming in on narrow phones */
+                    maxHfov: 120
                 },
-
 
                 scenes: {
 
-
-
-
-                    /* =================================
-                       LIVING
-                    ================================= */
-
                     living: {
-
                         type: "equirectangular",
-
                         panorama: "panos/Living.webp",
-
                         autoLoad: true,
-
                         hfov: responsiveHfov
-
                     },
-
-
-                    /* =================================
-                       DINING
-                    ================================= */
 
                     dining: {
-
                         type: "equirectangular",
-
                         panorama: "panos/Dining.webp",
-
                         autoLoad: true,
-
                         hfov: responsiveHfov
-
                     },
 
-
-                    /* =================================
-                       KITCHEN
-                    ================================= */
-
                     kitchen: {
-
                         type: "equirectangular",
-
                         panorama: "panos/Kitchen.webp",
-
                         autoLoad: true,
-
                         hfov: responsiveHfov
-
                     },
 
                     br1: {
@@ -734,47 +596,71 @@ const responsiveHfov =
 
             }
         );
+
+
+        /* =========================================
+           START BUTTON
+        ========================================= */
+
         document.getElementById("start-tour").addEventListener("click", () => {
-    document.getElementById("welcome-screen").style.display = "none";
-});
-const destinations = document.getElementById("destinations");
-const toggleButton = document.getElementById("toggle-destinations");
-destinations.appendChild(toggleButton);
-toggleButton.addEventListener("click", () => {
-    const thumbnails = destinations.querySelectorAll(".destination");
-    const areHidden = thumbnails.length > 0 &&
-        thumbnails[0].style.display === "none";
+            document.getElementById("welcome-screen").style.display = "none";
+        });
 
-    thumbnails.forEach(item => {
-        item.style.display = areHidden ? "" : "none";
-    });
 
-    toggleButton.textContent = areHidden ? "⌄" : "⌃";
-});
-window.addEventListener("resize", () => {
-    const newHfov =
-        window.innerWidth <= 350 ? 60 :
-        window.innerWidth <= 400 ? 65 :
-        window.innerWidth <= 600 ? 70 :
-        window.innerWidth <= 1200 ? 95 :
-        115;
+        /* =========================================
+           DESTINATION BAR TOGGLE
+        ========================================= */
 
-    viewer.setHfov(newHfov);
-    viewer.resize();
-});
-document.addEventListener("fullscreenchange", () => {
-    const fullscreenElement = document.fullscreenElement;
-    const destinations = document.getElementById("destinations");
-    const toggleButton = document.getElementById("toggle-destinations");
+        const destinations = document.getElementById("destinations");
+        const toggleButton = document.getElementById("toggle-destinations");
 
-    if (fullscreenElement) {
-        fullscreenElement.appendChild(destinations);
-        
-    } else {
-        document.body.appendChild(destinations);
-        
-    }
-});
+        destinations.appendChild(toggleButton);
+
+        toggleButton.addEventListener("click", () => {
+            const thumbnails = destinations.querySelectorAll(".destination");
+            const areHidden = thumbnails.length > 0 &&
+                thumbnails[0].style.display === "none";
+
+            thumbnails.forEach(item => {
+                item.style.display = areHidden ? "" : "none";
+            });
+
+            toggleButton.textContent = areHidden ? "⌄" : "⌃";
+        });
+
+
+        /* =========================================
+           RESIZE
+           Only change the FOV on a real change
+           (e.g. rotating a tablet) so the user's
+           own zoom isn't reset on every resize.
+        ========================================= */
+
+        let lastHfov = responsiveHfov;
+
+        window.addEventListener("resize", () => {
+            const newHfov = getHfov();
+
+            if (Math.abs(newHfov - lastHfov) > 8) {
+                viewer.setHfov(newHfov);
+                lastHfov = newHfov;
+            }
+
+            viewer.resize();
+        });
+
+
+        /* =========================================
+           FULLSCREEN
+           Keep the bar AND the mini map visible.
+        ========================================= */
+
+        document.addEventListener("fullscreenchange", () => {
+            const target = document.fullscreenElement || document.body;
+
+            target.appendChild(document.getElementById("destinations"));
+            target.appendChild(document.getElementById("mini-map"));
+        });
 
 
         /* =========================================
@@ -783,50 +669,10 @@ document.addEventListener("fullscreenchange", () => {
 
         function moveToScene(sceneName) {
 
+            viewer.loadScene(sceneName);
 
-            /*
-             * Remember current view.
-             */
-
-            const currentPitch =
-                viewer.getPitch();
-
-
-            const currentHfov =
-                viewer.getHfov();
-
-
-            /*
-             * Load new panorama.
-             *
-             * We keep the same yaw so the
-             * transition feels continuous.
-             */
-
-            const currentYaw =
-                viewer.getYaw();
-
-
-            viewer.loadScene(
-
-                sceneName
-
-            );
-
-
-            /*
-             * Update current location.
-             */
-
-            currentScene =
-                sceneName;
-                updateMiniMap();
-
-
-            /*
-             * Update thumbnails.
-             */
-
+            currentScene = sceneName;
+            updateMiniMap();
             updateDestinations();
 
         }
@@ -838,23 +684,10 @@ document.addEventListener("fullscreenchange", () => {
 
         function updateDestinations() {
 
+            const destinations = document.getElementById("destinations");
 
-            const destinations =
-                document.getElementById(
-                    "destinations"
-                );
-
-
-            /*
-             * Clear old thumbnails.
-             */
-
+            /* Clear old thumbnails. */
             destinations.querySelectorAll(".destination").forEach(item => item.remove());
-
-
-            /*
-             * ALWAYS SHOW ALL TEN LOCATIONS
-             */
 
             const availableDestinations = [
 
@@ -867,112 +700,41 @@ document.addEventListener("fullscreenchange", () => {
                 { name: "Master Bedroom", scene: "mbr", image: "panos/Mbr.webp" },
                 { name: "Bedroom 1", scene: "br1", image: "panos/br1.webp" },
                 { name: "Bedroom 2", scene: "br2", image: "panos/br2.webp" }
-                
 
             ];
 
+            availableDestinations.forEach(function (destination) {
 
-            /*
-             * Create thumbnails.
-             */
+                const item = document.createElement("div");
+                item.className = "destination";
 
-            availableDestinations.forEach(
-                function(destination) {
+                /* Highlight current room. */
+                if (destination.scene === currentScene) {
+                    item.classList.add("current");
+                }
 
+                item.innerHTML = `
+                    <img src="${destination.image}" alt="${destination.name}">
+                    <div class="destination-name">${destination.name}</div>
+                `;
 
-                    const item =
-                        document.createElement(
-                            "div"
-                        );
+                item.addEventListener("click", function () {
 
-
-                    item.className =
-                        "destination";
-
-
-                    /*
-                     * Highlight current room.
-                     */
-
-                    if (
-                        destination.scene ===
-                        currentScene
-                    ) {
-
-                        item.classList.add(
-                            "current"
-                        );
-
+                    /* Don't reload the current panorama. */
+                    if (destination.scene === currentScene) {
+                        return;
                     }
 
+                    moveToScene(destination.scene);
 
-                    /*
-                     * Create image + label.
-                     */
+                });
 
-                    item.innerHTML = `
+                destinations.appendChild(item);
 
-                        <img
-                            src="${destination.image}"
-                            alt="${destination.name}"
-                        >
+            });
 
-                        <div class="destination-name">
-
-                            ${destination.name}
-
-                        </div>
-
-                    `;
-
-
-                    /*
-                     * Thumbnail click.
-                     */
-
-                    item.addEventListener(
-                        "click",
-                        function() {
-
-
-                            /*
-                             * Don't reload the
-                             * current panorama.
-                             */
-
-                            if (
-                                destination.scene ===
-                                currentScene
-                            ) {
-
-                                return;
-
-                            }
-
-
-                            /*
-                             * Move to destination.
-                             */
-
-                            moveToScene(
-                                destination.scene
-                            );
-
-                        }
-                    );
-
-
-                    /*
-                     * Add thumbnail to bar.
-                     */
-
-                    destinations.appendChild(item);
-
-                }
-            );
-            destinations.appendChild(
-                document.getElementById("toggle-destinations")
-            );
+            /* Keep the toggle button last. */
+            destinations.appendChild(document.getElementById("toggle-destinations"));
         }
 
 
@@ -980,16 +742,9 @@ document.addEventListener("fullscreenchange", () => {
            HIDE INSTRUCTION
         ========================================= */
 
-        setTimeout(
-            function() {
-
-                document.getElementById(
-                    "instruction"
-                ).style.opacity = "0";
-
-            },
-            4000
-        );
+        setTimeout(function () {
+            document.getElementById("instruction").style.opacity = "0";
+        }, 4000);
 
 
         /* =========================================
@@ -998,15 +753,38 @@ document.addEventListener("fullscreenchange", () => {
 
         updateDestinations();
 
-const miniMap = document.getElementById("mini-map");
-const mapToggle = document.getElementById("map-toggle");
 
-mapToggle.addEventListener("click", () => {
-    const isCollapsed = miniMap.classList.toggle("collapsed");
-    mapToggle.textContent = isCollapsed ? "+" : "−";
-});
+        /* =========================================
+           MINI MAP TOGGLE
+        ========================================= */
+
+        const miniMap = document.getElementById("mini-map");
+        const mapToggle = document.getElementById("map-toggle");
+
+        mapToggle.addEventListener("click", () => {
+            const isCollapsed = miniMap.classList.toggle("collapsed");
+            mapToggle.textContent = isCollapsed ? "+" : "−";
+        });
+
+
+        /* =========================================
+           OPTIONAL HELPER - retune room dots
+           Uncomment, click a room on the mini map,
+           and copy the left/top values from the
+           browser console into the CSS above.
+        ========================================= */
+
+        /*
+        document.getElementById("map-stage").addEventListener("click", e => {
+            const r = e.currentTarget.getBoundingClientRect();
+            console.log(
+                "left: " + ((e.clientX - r.left) / r.width * 100).toFixed(1) + "%; " +
+                "top: " + ((e.clientY - r.top) / r.height * 100).toFixed(1) + "%;"
+            );
+        });
+        */
+
     </script>
-
 
 </body>
 
