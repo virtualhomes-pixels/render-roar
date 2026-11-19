@@ -1,791 +1,397 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Render Roar | 360° Virtual Tour</title>
-
-    <!-- PANNELLUM CSS -->
-    <link
-        rel="stylesheet"
-        href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css"
-    >
-
-    <!-- PANNELLUM JAVASCRIPT -->
-    <script
-        src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"
-    ></script>
-
-    <style>
-
-        /* =========================================
-           BASIC PAGE
-        ========================================= */
-
-        html,
-        body {
-            margin: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            background: #000;
-        }
-
-
-        /* =========================================
-           PANORAMA
-        ========================================= */
-
-        #panorama {
-            width: 100%;
-            height: 100%;
-        }
-
-
-        /* =========================================
-           INSTRUCTION
-        ========================================= */
-
-        #instruction {
-            position: absolute;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            padding: 10px 18px;
-            background: rgba(0, 0, 0, 0.55);
-            color: white;
-            font-family: Arial, sans-serif;
-            font-size: 14px;
-            border-radius: 20px;
-            z-index: 10;
-            pointer-events: none;
-            transition: opacity 0.5s;
-            max-width: calc(100vw - 40px);
-            box-sizing: border-box;
-            text-align: center;
-        }
-
-
-        /* =========================================
-           DESTINATION BAR
-        ========================================= */
-
-        #destinations {
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 8px;
-            padding: 8px;
-            background: rgba(0, 0, 0, 0.75);
-            border-radius: 6px;
-            z-index: 40;
-
-            /* never wider than the screen - scrolls instead */
-            max-width: calc(100vw - 40px);
-            overflow-x: auto;
-            box-sizing: border-box;
-        }
-
-        #toggle-destinations {
-            position: sticky;
-            right: 0;
-            flex-shrink: 0;
-            width: 36px;
-            min-width: 36px;
-            height: 60px;
-            align-self: center;
-            border: none;
-            border-radius: 5px;
-            background: rgba(60, 60, 60, 0.95);
-            color: white;
-            font-size: 24px;
-            cursor: pointer;
-        }
-
-
-        /* =========================================
-           DESTINATION THUMBNAIL
-        ========================================= */
-
-        .destination {
-            width: 110px;
-            flex-shrink: 0;
-            cursor: pointer;
-            position: relative;
-            transition:
-                transform 0.2s ease,
-                opacity 0.2s ease;
-        }
-
-        .destination:hover {
-            transform: scale(1.05);
-        }
-
-
-        /* =========================================
-           DESTINATION IMAGE
-        ========================================= */
-
-        .destination img {
-            width: 110px;
-            height: 70px;
-            object-fit: cover;
-            display: block;
-            border-radius: 3px;
-        }
-
-
-        /* =========================================
-           DESTINATION NAME
-        ========================================= */
-
-        .destination-name {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            padding: 5px 4px;
-            background: rgba(0, 0, 0, 0.65);
-            color: white;
-            font-family: Arial, sans-serif;
-            font-size: 12px;
-            text-align: center;
-            border-radius: 0 0 3px 3px;
-        }
-
-
-        /* =========================================
-           CURRENT LOCATION
-        ========================================= */
-
-        .destination.current {
-            outline: 3px solid white;
-            outline-offset: 2px;
-            transform: scale(1.05);
-        }
-
-
-        /* =========================================
-           WELCOME SCREEN
-        ========================================= */
-
-        #welcome-screen {
-            position: fixed;
-            inset: 0;
-            z-index: 100;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(0, 0, 0, 0.35);
-        }
-
-        .welcome-content {
-            text-align: center;
-            color: white;
-            padding: 25px;
-            animation: welcomeFade 1.2s ease-out;
-        }
-
-        .welcome-content h1 {
-            font-size: clamp(18px, 3vw, 32px);
-            margin-bottom: 25px;
-            text-align: center;
-            padding: 0 15px;
-        }
-
-        #start-tour {
-            padding: 15px 38px;
-            font-size: 16px;
-            font-weight: 600;
-            border: 1px solid rgba(255, 255, 255, 0.8);
-            border-radius: 30px;
-            background: white;
-            color: #111;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        #start-tour:hover {
-            background: transparent;
-            color: white;
-            transform: scale(1.05);
-        }
-
-        @keyframes welcomeFade {
-            from {
-                opacity: 0;
-                transform: translateY(15px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-
-        /* =========================================
-           MINI MAP
-        ========================================= */
-
-        #mini-map {
-            position: fixed;
-            left: 20px;
-            bottom: 120px;                      /* sits above the thumbnail bar */
-            width: clamp(220px, 26vw, 350px);   /* scales with the screen */
-            padding: 8px;
-            box-sizing: border-box;
-            background: rgba(0, 0, 0, 0.85);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            border-radius: 10px;
-            z-index: 50;
-        }
-
-        #map-title {
-            color: white;
-            font-family: Arial, sans-serif;
-            font-size: 13px;
-            font-weight: 600;
-            letter-spacing: 1.5px;
-            text-align: center;
-            margin: 0 0 4px;
-        }
-
-        /* image + markers share this box, so marker % = image % */
-        #map-stage {
-            position: relative;
-        }
-
-        #map-stage img {
-            display: block;
-            width: 100%;
-            height: auto;
-            border-radius: 5px;
-        }
-
-        #room-markers {
-            position: absolute;
-            inset: 0;
-            pointer-events: none;
-        }
-
-        #map-toggle {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            width: 28px;
-            height: 28px;
-            border: none;
-            border-radius: 50%;
-            background: rgba(0, 0, 0, 0.75);
-            color: white;
-            font-size: 20px;
-            cursor: pointer;
-            z-index: 2;
-        }
-
-        #mini-map.collapsed {
-            width: auto;
-            padding: 4px;
-        }
-
-        #mini-map.collapsed #map-title,
-        #mini-map.collapsed #map-stage {
-            display: none;
-        }
-
-        #mini-map.collapsed #map-toggle {
-            position: static;
-            display: block;
-        }
-
-
-        /* =========================================
-           ROOM MARKERS
-        ========================================= */
-
-        .room-marker {
-            position: absolute;
-            width: 0;
-            height: 0;
-            border: 2px solid transparent;
-            border-radius: 5px;
-            background: transparent;
-            box-sizing: border-box;
-            transition: 0.3s;
-        }
-
-        .room-marker.active {
-            width: 20px;
-            height: 20px;
-            background: white;
-            border: 7px solid #168BFF;
-            border-radius: 50%;
-            box-shadow: 0 0 8px rgba(22, 139, 255, 0.7);
-            transform: translate(-50%, -50%);
-        }
-
-        /* ROOM POSITIONS (% of the map image)
-           NOTE: these were tuned for the old layout - nudge once if needed */
-
-        .room-marker[data-scene="mbr"]      { left: 84%; top: 65%; }
-        .room-marker[data-scene="br1"]      { left: 71%; top: 21%; }
-        .room-marker[data-scene="br2"]      { left: 51%; top: 21%; }
-        .room-marker[data-scene="living"]   { left: 11%; top: 35%; }
-        .room-marker[data-scene="dining"]   { left: 28%; top: 27%; }
-        .room-marker[data-scene="hallway"]  { left: 50%; top: 49%; }
-        .room-marker[data-scene="kitchen"]  { left: 27%; top: 67%; }
-        .room-marker[data-scene="bathroom"] { left: 54%; top: 70%; }
-        .room-marker[data-scene="utility"]  { left: 43%; top: 70%; }
-
-        #mini-map.collapsed .room-marker {
-            display: none;
-        }
-
-
-        /* =========================================
-           LARGE SCREENS
-        ========================================= */
-
-        @media (min-width: 2000px) {
-
-            .destination {
-                width: 140px;
-            }
-
-            #destinations {
-                gap: 12px;
-                padding: 12px;
-            }
-
-            .destination-name {
-                font-size: 18px;
-                padding: 7px 4px;
-            }
-
-            .destination img {
-                width: 100%;
-                height: 100px;
-                object-fit: cover;
-            }
-
-            #mini-map {
-                bottom: 160px;
-            }
-        }
-
-
-        /* =========================================
-           MOBILE
-        ========================================= */
-
-        @media (max-width: 600px) {
-
-            .destination {
-                width: 90px;
-            }
-
-            .destination img {
-                width: 90px;
-                height: 60px;
-            }
-
-            #mini-map {
-                width: 200px;
-                bottom: 10px;
-                left: 10px;
-                padding: 5px;
-            }
-
-            #map-title {
-                font-size: 10px;
-            }
-        }
-
-    </style>
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#10110f">
+  <meta name="description" content="Explore this space through an immersive 360° virtual tour by Render Roar.">
+  <title>Render Roar | 360° Virtual Tour</title>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css">
+  <script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
+  <style>
+    :root {
+      color-scheme: dark;
+      --ink: #f6f5f0;
+      --muted: rgba(246,245,240,.66);
+      --panel: rgba(18,19,17,.76);
+      --panel-strong: rgba(18,19,17,.92);
+      --line: rgba(255,255,255,.14);
+      --accent: #d6c7a2;
+      --shadow: 0 14px 48px rgba(0,0,0,.28);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    * { box-sizing: border-box; }
+    html, body { margin:0; width:100%; height:100%; overflow:hidden; background:#10110f; color:var(--ink); font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    button { font:inherit; }
+    #app { position:relative; width:100%; height:100%; min-height:100%; overflow:hidden; background:#10110f; isolation:isolate; }
+    #panorama { position:absolute; inset:0; width:100%; height:100%; background:#10110f; }
+    .pnlm-load-box { background:rgba(15,16,14,.85)!important; color:#fff!important; }
+    .pnlm-lbox { border-color:var(--accent)!important; }
+    .scene-loader { position:absolute; z-index:16; top:50%; left:50%; display:flex; align-items:center; gap:11px; padding:12px 16px; border:1px solid var(--line); border-radius:999px; background:rgba(15,16,14,.78); color:var(--ink); font-size:11px; letter-spacing:.04em; box-shadow:var(--shadow); backdrop-filter:blur(14px); opacity:0; visibility:hidden; transform:translate(-50%,-42%); transition:opacity .2s, visibility .2s, transform .2s; pointer-events:none; }
+    .scene-loader.visible { opacity:1; visibility:visible; transform:translate(-50%,-50%); }
+    .loader-spinner { width:15px; height:15px; border:2px solid rgba(255,255,255,.22); border-top-color:var(--accent); border-radius:50%; animation:spin .75s linear infinite; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .topbar { position:absolute; z-index:20; top:20px; left:22px; right:22px; display:flex; align-items:center; justify-content:space-between; gap:16px; pointer-events:none; }
+    .brand, .tour-meta { pointer-events:auto; display:flex; align-items:center; gap:12px; min-height:48px; padding:9px 15px; border:1px solid var(--line); border-radius:14px; background:var(--panel); backdrop-filter:blur(18px); box-shadow:var(--shadow); }
+    .brand-name { font-size:13px; line-height:1.1; font-weight:750; letter-spacing:.16em; }
+    .brand-sub { margin-top:4px; color:var(--muted); font-size:9px; letter-spacing:.19em; text-transform:uppercase; }
+    .tour-meta { gap:9px; padding:9px 14px; }
+    .live-dot { width:7px; height:7px; border-radius:50%; background:#b7c79b; box-shadow:0 0 12px rgba(183,199,155,.7); }
+    .meta-copy { color:var(--muted); font-size:10px; letter-spacing:.13em; text-transform:uppercase; }
+    #current-room { color:var(--ink); font-size:12px; font-weight:650; letter-spacing:.03em; }
+    .instruction { position:absolute; z-index:15; top:76px; left:50%; transform:translateX(-50%); padding:9px 14px; border:1px solid var(--line); border-radius:999px; background:rgba(15,16,14,.62); color:rgba(255,255,255,.82); font-size:11px; letter-spacing:.025em; white-space:nowrap; backdrop-filter:blur(12px); transition:opacity .6s, transform .6s; pointer-events:none; }
+    .instruction.hide { opacity:0; transform:translate(-50%,-8px); }
+    .map-panel { position:absolute; z-index:18; left:22px; bottom:120px; width:clamp(190px,23vw,290px); padding:12px; border:1px solid var(--line); border-radius:16px; background:var(--panel); backdrop-filter:blur(18px); box-shadow:var(--shadow); transition:width .25s, padding .25s, transform .25s; }
+    .panel-heading { display:flex; align-items:center; justify-content:space-between; gap:10px; margin:0 0 10px; }
+    .eyebrow { color:var(--muted); font-size:9px; font-weight:700; letter-spacing:.19em; text-transform:uppercase; }
+    .map-toggle, .icon-btn { display:grid; place-items:center; width:31px; height:31px; flex:0 0 31px; border:1px solid var(--line); border-radius:10px; color:var(--ink); background:rgba(255,255,255,.07); cursor:pointer; transition:background .2s, border-color .2s, transform .2s; }
+    .map-toggle:hover, .icon-btn:hover { background:rgba(255,255,255,.16); border-color:rgba(255,255,255,.32); }
+    .map-toggle:active, .icon-btn:active { transform:scale(.94); }
+    #map-stage { position:relative; overflow:hidden; border-radius:9px; background:#24251f; }
+    #map-stage img { display:block; width:100%; height:auto; }
+    #room-markers { position:absolute; inset:0; }
+    .room-marker { position:absolute; left:var(--x); top:var(--y); width:13px; height:13px; padding:0; transform:translate(-50%,-50%); border:2px solid rgba(255,255,255,.94); border-radius:50%; background:rgba(26,27,23,.72); box-shadow:0 2px 8px rgba(0,0,0,.45); cursor:pointer; transition:width .2s,height .2s,background .2s,border-color .2s; }
+    .room-marker:hover { width:17px; height:17px; }
+    .room-marker.active { width:19px; height:19px; border:4px solid #fff; background:#b6a47b; box-shadow:0 0 0 5px rgba(214,199,162,.24), 0 0 16px rgba(214,199,162,.8); }
+    .map-panel.collapsed { width:auto; padding:7px; }
+    .map-panel.collapsed .panel-heading { margin:0; }
+    .map-panel.collapsed .eyebrow, .map-panel.collapsed #map-stage { display:none; }
+    .map-panel.collapsed .map-toggle { width:34px; height:34px; }
+    .side-controls { position:absolute; z-index:18; top:50%; right:22px; transform:translateY(-50%); display:flex; flex-direction:column; gap:8px; padding:8px; border:1px solid var(--line); border-radius:15px; background:var(--panel); backdrop-filter:blur(18px); box-shadow:var(--shadow); }
+    .icon-btn { width:39px; height:39px; flex-basis:39px; border-radius:11px; font-size:18px; }
+    .icon-btn svg { width:17px; height:17px; stroke:currentColor; fill:none; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }
+    .control-divider { height:1px; margin:1px 4px; background:var(--line); }
+    .room-dock { position:absolute; z-index:19; left:50%; bottom:20px; transform:translateX(-50%); display:flex; align-items:center; gap:8px; max-width:calc(100vw - 44px); padding:9px; border:1px solid var(--line); border-radius:17px; background:var(--panel-strong); backdrop-filter:blur(20px); box-shadow:var(--shadow); }
+    #destinations { display:flex; align-items:center; gap:8px; max-width:min(calc(100vw - 150px),1400px); overflow-x:auto; scrollbar-width:none; scroll-behavior:smooth; overscroll-behavior-x:contain; scroll-snap-type:x proximity; -webkit-overflow-scrolling:touch; touch-action:pan-x; }
+    #destinations::-webkit-scrollbar { display:none; }
+    .destination { position:relative; flex:0 0 112px; width:112px; height:66px; overflow:hidden; border:1px solid transparent; border-radius:10px; background:#292a25; cursor:pointer; opacity:.78; scroll-snap-align:start; transition:opacity .25s, transform .25s, border-color .25s, box-shadow .25s; }
+    .destination:hover { opacity:1; transform:translateY(-2px); }
+    .destination.current { opacity:1; border-color:var(--accent); box-shadow:0 0 0 1px rgba(214,199,162,.3), 0 5px 18px rgba(0,0,0,.22); }
+    .destination.current::before { content:""; position:absolute; z-index:2; top:0; left:0; right:0; height:3px; background:var(--accent); box-shadow:0 1px 8px rgba(214,199,162,.65); }
+    .destination:focus-visible { outline:2px solid var(--accent); outline-offset:3px; opacity:1; }
+    .destination img { display:block; width:100%; height:100%; object-fit:cover; transition:transform .35s; }
+    .destination:hover img { transform:scale(1.06); }
+    .destination::after { content:""; position:absolute; inset:25% 0 0; background:linear-gradient(transparent,rgba(0,0,0,.78)); pointer-events:none; }
+    .destination-name { position:absolute; z-index:1; left:8px; right:7px; bottom:7px; color:#fff; font-size:10px; font-weight:650; text-align:left; text-shadow:0 1px 5px rgba(0,0,0,.7); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .dock-toggle { display:grid; place-items:center; width:38px; height:48px; flex:0 0 38px; border:1px solid var(--line); border-radius:10px; background:rgba(255,255,255,.07); color:var(--ink); cursor:pointer; font-size:19px; }
+    .room-dock.collapsed #destinations { display:none; }
+    .room-dock.collapsed { padding:7px; }
+    #app.ui-idle .side-controls:not(:focus-within), #app.ui-idle .room-dock:not(:focus-within) { opacity:0; visibility:hidden; pointer-events:none; }
+    #app.ui-idle .side-controls:not(:focus-within) { transform:translateY(calc(-50% + 8px)); }
+    #app.ui-idle .room-dock:not(:focus-within) { transform:translate(-50%,8px); }
+    .side-controls, .room-dock { transition:opacity .35s, visibility .35s, transform .35s; }
+    .welcome { position:absolute; z-index:50; inset:0; display:grid; place-items:center; padding:24px; background:linear-gradient(180deg,rgba(10,11,9,.38),rgba(10,11,9,.66)); backdrop-filter:blur(3px); transition:opacity .65s, visibility .65s; }
+    .welcome.dismissed { opacity:0; visibility:hidden; pointer-events:none; }
+    .welcome-card { width:min(560px,100%); padding:clamp(26px,5vw,52px); border:1px solid rgba(255,255,255,.2); border-radius:24px; background:rgba(16,17,15,.62); box-shadow:0 24px 90px rgba(0,0,0,.35); text-align:center; backdrop-filter:blur(22px); animation:rise .8s ease both; }
+    .welcome-kicker { display:flex; align-items:center; justify-content:center; gap:9px; margin-bottom:18px; color:var(--accent); font-size:10px; font-weight:700; letter-spacing:.23em; text-transform:uppercase; }
+    .welcome-kicker::before, .welcome-kicker::after { content:""; width:25px; height:1px; background:rgba(214,199,162,.6); }
+    .welcome h1 { margin:0; font-family:Georgia, "Times New Roman", serif; font-size:clamp(34px,6vw,58px); line-height:1.04; font-weight:400; letter-spacing:-.035em; }
+    .welcome p { max-width:370px; margin:17px auto 27px; color:rgba(255,255,255,.72); font-size:13px; line-height:1.7; }
+    #start-tour { display:inline-flex; align-items:center; justify-content:center; gap:13px; min-height:49px; padding:0 24px; border:1px solid var(--accent); border-radius:999px; background:var(--accent); color:#171813; font-size:11px; font-weight:800; letter-spacing:.14em; text-transform:uppercase; cursor:pointer; transition:background .2s,color .2s,transform .2s; }
+    #start-tour:hover { background:transparent; color:#fff; transform:translateY(-2px); }
+    #start-tour span { font-size:17px; line-height:0; }
+    @keyframes rise { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
+    button:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
+    @media (min-width:1800px) {
+      .destination { flex-basis:135px; width:135px; height:78px; }
+      .destination-name { font-size:11px; }
+      .room-dock { bottom:28px; }
+      .map-panel { bottom:145px; }
+    }
+    @media (max-width:700px) {
+      .topbar { top:12px; left:12px; right:12px; }
+      .brand { min-height:43px; padding:7px 11px; gap:9px; }
+      .brand-name { font-size:11px; }
+      .brand-sub { font-size:8px; }
+      .tour-meta { min-height:43px; padding:7px 10px; gap:7px; }
+      .meta-copy { display:none; }
+      #current-room { font-size:10px; }
+      .instruction { top:58px; max-width:calc(100vw - 30px); font-size:10px; }
+      .side-controls { top:auto; right:12px; bottom:112px; transform:none; flex-direction:row; gap:5px; padding:6px; border-radius:12px; }
+      .icon-btn { width:34px; height:34px; flex-basis:34px; border-radius:9px; }
+      .control-divider { width:1px; height:22px; align-self:center; margin:0 1px; }
+      .map-panel { left:12px; bottom:112px; width:clamp(150px,43vw,205px); padding:8px; border-radius:13px; }
+      .panel-heading { margin-bottom:6px; }
+      .room-dock { bottom:calc(10px + var(--safe-bottom)); max-width:calc(100vw - 20px); width:calc(100vw - 20px); padding:7px; gap:6px; border-radius:14px; }
+      #destinations { max-width:none; width:100%; gap:6px; scroll-snap-type:x mandatory; }
+      .destination { flex-basis:84px; width:84px; height:55px; min-height:55px; border-radius:8px; }
+      .destination-name { left:6px; bottom:6px; font-size:9px; }
+      .dock-toggle { width:32px; height:42px; flex-basis:32px; }
+      .welcome-card { border-radius:20px; }
+      .welcome p { font-size:12px; }
+    }
+    @media (max-width:380px) {
+      .brand-sub { display:none; }
+      .brand { min-height:39px; }
+      .tour-meta { min-height:39px; }
+      .map-panel { width:145px; }
+      .side-controls { bottom:105px; }
+      .map-panel { bottom:105px; }
+      .destination { flex-basis:76px; width:76px; height:51px; }
+    }
+    @media (prefers-reduced-motion:reduce) {
+      *, *::before, *::after { scroll-behavior:auto!important; animation-duration:.01ms!important; transition-duration:.01ms!important; }
+    }
+  </style>
 </head>
-
-
 <body>
+<div id="app">
+  <div id="panorama" aria-label="Interactive 360 degree virtual tour"></div>
+  <div class="scene-loader" id="scene-loader" role="status" aria-live="polite" aria-hidden="true">
+    <span class="loader-spinner" aria-hidden="true"></span>
+    <span id="loader-label">Loading room…</span>
+  </div>
 
-    <!-- =========================================
-         PANORAMA
-    ========================================== -->
-
-    <div id="panorama"></div>
-
-    <div id="mini-map">
-        <button id="map-toggle" type="button">−</button>
-        <div id="map-title">MINI MAP</div>
-        <div id="map-stage">
-            <img src="panos/floor-map.webp" alt="Apartment floor plan">
-            <div id="room-markers">
-                <div class="room-marker" data-scene="living"></div>
-                <div class="room-marker" data-scene="dining"></div>
-                <div class="room-marker" data-scene="kitchen"></div>
-                <div class="room-marker" data-scene="utility"></div>
-                <div class="room-marker" data-scene="hallway"></div>
-                <div class="room-marker" data-scene="bathroom"></div>
-                <div class="room-marker" data-scene="mbr"></div>
-                <div class="room-marker" data-scene="br1"></div>
-                <div class="room-marker" data-scene="br2"></div>
-            </div>
-        </div>
+  <header class="topbar">
+    <div class="brand" aria-label="Render Roar">
+      <div>
+        <div class="brand-name">RENDER ROAR</div>
+        <div class="brand-sub">Spaces, brought to life</div>
+      </div>
     </div>
-
-    <button id="toggle-destinations" type="button">⌄</button>
-
-    <div id="welcome-screen">
-        <div class="welcome-content">
-            <h1>Click to Explore Your Virtual Tour</h1>
-            <button id="start-tour">Start Tour</button>
-        </div>
+    <div class="tour-meta">
+      <span class="live-dot"></span>
+      <span class="meta-copy">Now exploring</span>
+      <span id="current-room">Living Room</span>
     </div>
+  </header>
 
+  <div class="instruction" id="instruction">Drag to look around · Choose a room to move through the space</div>
 
-    <!-- =========================================
-         INSTRUCTION
-    ========================================== -->
-
-    <div id="instruction">
-        Drag to look around • Select a room below to explore
+  <aside class="map-panel" id="mini-map" aria-label="Floor plan navigation">
+    <div class="panel-heading">
+      <span class="eyebrow">Explore the floor plan</span>
+      <button class="map-toggle" id="map-toggle" type="button" aria-label="Collapse floor plan" title="Collapse floor plan">−</button>
     </div>
-
-
-    <!-- =========================================
-         DESTINATION BAR
-    ========================================== -->
-
-    <div id="destinations"></div>
-
-
-    <script>
-
-        /* =========================================
-           CURRENT LOCATION
-        ========================================= */
-
-        let currentScene = "living";
-
-        function updateMiniMap() {
-            document.querySelectorAll(".room-marker").forEach(marker => {
-                marker.classList.toggle(
-                    "active",
-                    marker.dataset.scene === currentScene
-                );
-            });
-        }
-
-        updateMiniMap();
-
-
-        /* =========================================
-           RESPONSIVE FIELD OF VIEW
-           Phones: fixed values.
-           Tablet / laptop: calculated from the
-           screen's aspect ratio so there is no
-           heavy edge stretching.
-        ========================================= */
-
-        function getHfov() {
-            const w = window.innerWidth;
-            const aspect = w / window.innerHeight;
-
-            /* Target VERTICAL view in degrees.
-               Phones (tall, narrow screens) use a bigger number
-               - raise it to zoom IN more, lower it to zoom OUT. */
-            const isPhone = w <= 600;
-            const targetVfov = isPhone ? 80 : 70;
-
-            const vfov = targetVfov * Math.PI / 180;
-            const hfov = 2 * Math.atan(Math.tan(vfov / 2) * aspect) * 180 / Math.PI;
-
-            const minAllowed = isPhone ? 35 : 60;
-            const maxAllowed = isPhone ? 75 : 110;
-
-            return Math.round(Math.min(maxAllowed, Math.max(minAllowed, hfov)));
-        }
-
-        const responsiveHfov = getHfov();
-
-
-        /* =========================================
-           CREATE PANNELLUM VIEWER
-        ========================================= */
-
-        const viewer = pannellum.viewer(
-            "panorama",
-            {
-
-                default: {
-                    firstScene: "living",
-                    sceneFadeDuration: 1200,
-                    minHfov: 30,   /* Pannellum's default minimum is 50, which blocks zooming in on narrow phones */
-                    maxHfov: 120
-                },
-
-                scenes: {
-
-                    living: {
-                        type: "equirectangular",
-                        panorama: "panos/Living.webp",
-                        autoLoad: true,
-                        hfov: responsiveHfov
-                    },
-
-                    dining: {
-                        type: "equirectangular",
-                        panorama: "panos/Dining.webp",
-                        autoLoad: true,
-                        hfov: responsiveHfov
-                    },
-
-                    kitchen: {
-                        type: "equirectangular",
-                        panorama: "panos/Kitchen.webp",
-                        autoLoad: true,
-                        hfov: responsiveHfov
-                    },
-
-                    br1: {
-                        type: "equirectangular",
-                        panorama: "panos/br1.webp",
-                        autoLoad: true,
-                        hfov: responsiveHfov
-                    },
-
-                    br2: {
-                        type: "equirectangular",
-                        panorama: "panos/br2.webp",
-                        autoLoad: true,
-                        hfov: responsiveHfov
-                    },
-
-                    mbr: {
-                        type: "equirectangular",
-                        panorama: "panos/Mbr.webp",
-                        autoLoad: true,
-                        hfov: responsiveHfov
-                    },
-
-                    bathroom: {
-                        type: "equirectangular",
-                        panorama: "panos/Bathroom.webp",
-                        autoLoad: true,
-                        hfov: responsiveHfov
-                    },
-
-                    hallway: {
-                        type: "equirectangular",
-                        panorama: "panos/Hallway.webp",
-                        autoLoad: true,
-                        hfov: responsiveHfov
-                    },
-
-                    utility: {
-                        type: "equirectangular",
-                        panorama: "panos/Utility.webp",
-                        autoLoad: true,
-                        hfov: responsiveHfov
-                    }
-                }
-
-            }
-        );
-
-
-        /* =========================================
-           START BUTTON
-        ========================================= */
-
-        document.getElementById("start-tour").addEventListener("click", () => {
-            document.getElementById("welcome-screen").style.display = "none";
-        });
-
-
-        /* =========================================
-           DESTINATION BAR TOGGLE
-        ========================================= */
-
-        const destinations = document.getElementById("destinations");
-        const toggleButton = document.getElementById("toggle-destinations");
-
-        destinations.appendChild(toggleButton);
-
-        toggleButton.addEventListener("click", () => {
-            const thumbnails = destinations.querySelectorAll(".destination");
-            const areHidden = thumbnails.length > 0 &&
-                thumbnails[0].style.display === "none";
-
-            thumbnails.forEach(item => {
-                item.style.display = areHidden ? "" : "none";
-            });
-
-            toggleButton.textContent = areHidden ? "⌄" : "⌃";
-        });
-
-
-        /* =========================================
-           RESIZE
-           Only change the FOV on a real change
-           (e.g. rotating a tablet) so the user's
-           own zoom isn't reset on every resize.
-        ========================================= */
-
-        let lastHfov = responsiveHfov;
-
-        window.addEventListener("resize", () => {
-            const newHfov = getHfov();
-
-            if (Math.abs(newHfov - lastHfov) > 8) {
-                viewer.setHfov(newHfov);
-                lastHfov = newHfov;
-            }
-
-            viewer.resize();
-        });
-
-
-        /* =========================================
-           FULLSCREEN
-           Keep the bar AND the mini map visible.
-        ========================================= */
-
-        document.addEventListener("fullscreenchange", () => {
-            const target = document.fullscreenElement || document.body;
-
-            target.appendChild(document.getElementById("destinations"));
-            target.appendChild(document.getElementById("mini-map"));
-        });
-
-
-        /* =========================================
-           MOVE TO ANOTHER SCENE
-        ========================================= */
-
-        function moveToScene(sceneName) {
-
-            viewer.loadScene(sceneName);
-
-            currentScene = sceneName;
-            updateMiniMap();
-            updateDestinations();
-
-        }
-
-
-        /* =========================================
-           UPDATE DESTINATION BAR
-        ========================================= */
-
-        function updateDestinations() {
-
-            const destinations = document.getElementById("destinations");
-
-            /* Clear old thumbnails. */
-            destinations.querySelectorAll(".destination").forEach(item => item.remove());
-
-            const availableDestinations = [
-
-                { name: "Living", scene: "living", image: "panos/Living.webp" },
-                { name: "Dining", scene: "dining", image: "panos/Dining.webp" },
-                { name: "Kitchen", scene: "kitchen", image: "panos/Kitchen.webp" },
-                { name: "Utility", scene: "utility", image: "panos/Utility.webp" },
-                { name: "Hallway", scene: "hallway", image: "panos/Hallway.webp" },
-                { name: "Bathroom", scene: "bathroom", image: "panos/Bathroom.webp" },
-                { name: "Master Bedroom", scene: "mbr", image: "panos/Mbr.webp" },
-                { name: "Bedroom 1", scene: "br1", image: "panos/br1.webp" },
-                { name: "Bedroom 2", scene: "br2", image: "panos/br2.webp" }
-
-            ];
-
-            availableDestinations.forEach(function (destination) {
-
-                const item = document.createElement("div");
-                item.className = "destination";
-
-                /* Highlight current room. */
-                if (destination.scene === currentScene) {
-                    item.classList.add("current");
-                }
-
-                item.innerHTML = `
-                    <img src="${destination.image}" alt="${destination.name}">
-                    <div class="destination-name">${destination.name}</div>
-                `;
-
-                item.addEventListener("click", function () {
-
-                    /* Don't reload the current panorama. */
-                    if (destination.scene === currentScene) {
-                        return;
-                    }
-
-                    moveToScene(destination.scene);
-
-                });
-
-                destinations.appendChild(item);
-
-            });
-
-            /* Keep the toggle button last. */
-            destinations.appendChild(document.getElementById("toggle-destinations"));
-        }
-
-
-        /* =========================================
-           HIDE INSTRUCTION
-        ========================================= */
-
-        setTimeout(function () {
-            document.getElementById("instruction").style.opacity = "0";
-        }, 4000);
-
-
-        /* =========================================
-           INITIAL DESTINATION BAR
-        ========================================= */
-
-        updateDestinations();
-
-
-        /* =========================================
-           MINI MAP TOGGLE
-        ========================================= */
-
-        const miniMap = document.getElementById("mini-map");
-        const mapToggle = document.getElementById("map-toggle");
-
-        mapToggle.addEventListener("click", () => {
-            const isCollapsed = miniMap.classList.toggle("collapsed");
-            mapToggle.textContent = isCollapsed ? "+" : "−";
-        });
-
-
-        /* =========================================
-           OPTIONAL HELPER - retune room dots
-           Uncomment, click a room on the mini map,
-           and copy the left/top values from the
-           browser console into the CSS above.
-        ========================================= */
-
-        /*
-        document.getElementById("map-stage").addEventListener("click", e => {
-            const r = e.currentTarget.getBoundingClientRect();
-            console.log(
-                "left: " + ((e.clientX - r.left) / r.width * 100).toFixed(1) + "%; " +
-                "top: " + ((e.clientY - r.top) / r.height * 100).toFixed(1) + "%;"
-            );
-        });
-        */
-
-    </script>
-
+    <div id="map-stage">
+      <img src="panos/floor-map.webp" alt="Apartment floor plan">
+      <div id="room-markers">
+        <button class="room-marker" data-scene="mbr" style="--x:84%;--y:65%" aria-label="Master Bedroom" title="Master Bedroom"></button>
+        <button class="room-marker" data-scene="br1" style="--x:71%;--y:21%" aria-label="Bedroom 1" title="Bedroom 1"></button>
+        <button class="room-marker" data-scene="br2" style="--x:51%;--y:21%" aria-label="Bedroom 2" title="Bedroom 2"></button>
+        <button class="room-marker" data-scene="living" style="--x:11%;--y:35%" aria-label="Living Room" title="Living Room"></button>
+        <button class="room-marker" data-scene="dining" style="--x:28%;--y:27%" aria-label="Dining" title="Dining"></button>
+        <button class="room-marker" data-scene="hallway" style="--x:50%;--y:49%" aria-label="Hallway" title="Hallway"></button>
+        <button class="room-marker" data-scene="kitchen" style="--x:27%;--y:67%" aria-label="Kitchen" title="Kitchen"></button>
+        <button class="room-marker" data-scene="bathroom" style="--x:54%;--y:70%" aria-label="Bathroom" title="Bathroom"></button>
+        <button class="room-marker" data-scene="utility" style="--x:43%;--y:70%" aria-label="Utility" title="Utility"></button>
+      </div>
+    </div>
+  </aside>
+
+  <nav class="side-controls" aria-label="Tour controls">
+    <button class="icon-btn" id="zoom-in" type="button" aria-label="Zoom in" title="Zoom in">
+      <svg viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.8"/><path d="M16 16l5 5M10.8 7.5v6.6M7.5 10.8h6.6"/></svg>
+    </button>
+    <button class="icon-btn" id="zoom-out" type="button" aria-label="Zoom out" title="Zoom out">
+      <svg viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.8"/><path d="M16 16l5 5M7.5 10.8h6.6"/></svg>
+    </button>
+    <span class="control-divider"></span>
+    <button class="icon-btn" id="reset-view" type="button" aria-label="Reset view" title="Reset view">
+      <svg viewBox="0 0 24 24"><path d="M3 11a8.5 8.5 0 1 1 2.5 6"/><path d="M3 4v7h7"/></svg>
+    </button>
+    <button class="icon-btn" id="fullscreen" type="button" aria-label="Enter fullscreen" title="Fullscreen">
+      <svg viewBox="0 0 24 24"><path d="M8 3H3v5M16 3h5v5M3 16v5h5M21 16v5h-5"/></svg>
+    </button>
+  </nav>
+
+  <div class="room-dock" id="room-dock">
+    <div id="destinations" aria-label="Choose a room"></div>
+    <button class="dock-toggle" id="toggle-destinations" type="button" aria-label="Collapse room list" title="Collapse room list">⌄</button>
+  </div>
+
+  <section class="welcome" id="welcome-screen">
+    <div class="welcome-card">
+      <div class="welcome-kicker">Render Roar · Virtual Experience</div>
+      <h1>Step inside.<br>Explore every detail.</h1>
+      <p>Move through the space at your own pace. Look around, discover each room and experience the design in 360°.</p>
+      <button id="start-tour" type="button">Explore the space <span>↗</span></button>
+    </div>
+  </section>
+</div>
+
+<script>
+  const roomList = [
+    { name: "Living Room", scene: "living", image: "panos/Living.webp" },
+    { name: "Dining", scene: "dining", image: "panos/Dining.webp" },
+    { name: "Kitchen", scene: "kitchen", image: "panos/Kitchen.webp" },
+    { name: "Utility", scene: "utility", image: "panos/Utility.webp" },
+    { name: "Hallway", scene: "hallway", image: "panos/Hallway.webp" },
+    { name: "Bathroom", scene: "bathroom", image: "panos/Bathroom.webp" },
+    { name: "Master Bedroom", scene: "mbr", image: "panos/Mbr.webp" },
+    { name: "Bedroom 1", scene: "br1", image: "panos/br1.webp" },
+    { name: "Bedroom 2", scene: "br2", image: "panos/br2.webp" }
+  ];
+
+  function getResponsiveHfov() {
+    const aspect = window.innerWidth / Math.max(window.innerHeight, 1);
+    const targetVfov = window.innerWidth <= 600 ? 80 : 70;
+    const vfov = targetVfov * Math.PI / 180;
+    const hfov = 2 * Math.atan(Math.tan(vfov / 2) * aspect) * 180 / Math.PI;
+    return Math.round(Math.min(window.innerWidth <= 600 ? 75 : 110, Math.max(window.innerWidth <= 600 ? 35 : 60, hfov)));
+  }
+
+  const initialHfov = getResponsiveHfov();
+  const viewer = pannellum.viewer("panorama", {
+    default: {
+      firstScene: "living",
+      sceneFadeDuration: 850,
+      minHfov: 30,
+      maxHfov: 120,
+      showControls: false,
+      autoLoad: true
+    },
+    scenes: {
+      living:   { type:"equirectangular", panorama:"panos/Living.webp", autoLoad:true, hfov:initialHfov },
+      dining:   { type:"equirectangular", panorama:"panos/Dining.webp", autoLoad:true, hfov:initialHfov },
+      kitchen:  { type:"equirectangular", panorama:"panos/Kitchen.webp", autoLoad:true, hfov:initialHfov },
+      utility:  { type:"equirectangular", panorama:"panos/Utility.webp", autoLoad:true, hfov:initialHfov },
+      hallway:  { type:"equirectangular", panorama:"panos/Hallway.webp", autoLoad:true, hfov:initialHfov },
+      bathroom: { type:"equirectangular", panorama:"panos/Bathroom.webp", autoLoad:true, hfov:initialHfov },
+      mbr:      { type:"equirectangular", panorama:"panos/Mbr.webp", autoLoad:true, hfov:initialHfov },
+      br1:      { type:"equirectangular", panorama:"panos/br1.webp", autoLoad:true, hfov:initialHfov },
+      br2:      { type:"equirectangular", panorama:"panos/br2.webp", autoLoad:true, hfov:initialHfov }
+    }
+  });
+
+  let currentScene = "living";
+  let startingView = null;
+
+  function setCurrentRoom(scene) {
+    currentScene = scene;
+    const room = roomList.find(item => item.scene === scene);
+    document.getElementById("current-room").textContent = room ? room.name : "Virtual Tour";
+    document.querySelectorAll(".destination").forEach(item => {
+      const active = item.dataset.scene === scene;
+      item.classList.toggle("current", active);
+      item.setAttribute("aria-pressed", active ? "true" : "false");
+      if (active) item.scrollIntoView({ behavior:"smooth", block:"nearest", inline:"nearest" });
+    });
+    document.querySelectorAll(".room-marker").forEach(marker => {
+      const active = marker.dataset.scene === scene;
+      marker.classList.toggle("active", active);
+      marker.setAttribute("aria-pressed", active ? "true" : "false");
+    });
+  }
+
+  const sceneLoader = document.getElementById("scene-loader");
+  const loaderLabel = document.getElementById("loader-label");
+  function showSceneLoader(scene) {
+    const room = roomList.find(item => item.scene === scene);
+    loaderLabel.textContent = room ? `Loading ${room.name}…` : "Loading room…";
+    sceneLoader.classList.add("visible");
+    sceneLoader.setAttribute("aria-hidden", "false");
+  }
+  function hideSceneLoader() {
+    sceneLoader.classList.remove("visible");
+    sceneLoader.setAttribute("aria-hidden", "true");
+  }
+
+  function goToScene(scene) {
+    if (!roomList.some(item => item.scene === scene) || scene === currentScene) return;
+    showSceneLoader(scene);
+    viewer.loadScene(scene);
+    setCurrentRoom(scene);
+  }
+
+  const destinations = document.getElementById("destinations");
+  roomList.forEach(room => {
+    const item = document.createElement("button");
+    item.type = "button";
+    item.className = "destination";
+    item.dataset.scene = room.scene;
+    item.setAttribute("aria-label", "Explore " + room.name);
+    item.innerHTML = `<img src="${room.image}" alt="" loading="lazy"><span class="destination-name">${room.name}</span>`;
+    item.addEventListener("click", () => goToScene(room.scene));
+    destinations.appendChild(item);
+  });
+
+  document.querySelectorAll(".room-marker").forEach(marker => {
+    marker.addEventListener("click", () => goToScene(marker.dataset.scene));
+  });
+
+  viewer.on("scenechange", scene => setCurrentRoom(scene));
+  viewer.on("load", () => {
+    hideSceneLoader();
+    if (!startingView) startingView = { yaw:viewer.getYaw(), pitch:viewer.getPitch(), hfov:viewer.getHfov() };
+  });
+  setCurrentRoom(currentScene);
+
+  document.getElementById("start-tour").addEventListener("click", () => {
+    document.getElementById("welcome-screen").classList.add("dismissed");
+    window.setTimeout(() => document.getElementById("instruction").classList.add("hide"), 4800);
+  });
+
+  // Keep the panorama unobstructed when idle; any pointer, touch or keyboard activity reveals the controls again.
+  const app = document.getElementById("app");
+  let idleTimer = null;
+  function revealTourUI() {
+    app.classList.remove("ui-idle");
+    window.clearTimeout(idleTimer);
+    if (!document.getElementById("welcome-screen").classList.contains("dismissed")) return;
+    idleTimer = window.setTimeout(() => app.classList.add("ui-idle"), 3800);
+  }
+  ["pointermove", "pointerdown", "touchstart", "keydown"].forEach(eventName => {
+    app.addEventListener(eventName, revealTourUI, { passive:true });
+  });
+  document.getElementById("start-tour").addEventListener("click", () => {
+    window.setTimeout(revealTourUI, 650);
+  });
+
+  document.getElementById("zoom-in").addEventListener("click", () => viewer.setHfov(Math.max(30, viewer.getHfov() - 8)));
+  document.getElementById("zoom-out").addEventListener("click", () => viewer.setHfov(Math.min(120, viewer.getHfov() + 8)));
+  document.getElementById("reset-view").addEventListener("click", () => {
+    if (startingView) viewer.lookAt(startingView.pitch, startingView.yaw, startingView.hfov, { duration:700 });
+    else viewer.setHfov(initialHfov);
+  });
+
+  const fullscreenButton = document.getElementById("fullscreen");
+  fullscreenButton.addEventListener("click", async () => {
+    try {
+      if (!document.fullscreenElement) await document.getElementById("app").requestFullscreen();
+      else await document.exitFullscreen();
+    } catch (error) {
+      console.warn("Fullscreen is not available in this browser.", error);
+    }
+  });
+  document.addEventListener("fullscreenchange", () => {
+    const active = Boolean(document.fullscreenElement);
+    fullscreenButton.setAttribute("aria-label", active ? "Exit fullscreen" : "Enter fullscreen");
+    fullscreenButton.title = active ? "Exit fullscreen" : "Fullscreen";
+    viewer.resize();
+  });
+
+  const miniMap = document.getElementById("mini-map");
+  const mapToggle = document.getElementById("map-toggle");
+  mapToggle.addEventListener("click", () => {
+    const collapsed = miniMap.classList.toggle("collapsed");
+    mapToggle.textContent = collapsed ? "+" : "−";
+    mapToggle.setAttribute("aria-label", collapsed ? "Expand floor plan" : "Collapse floor plan");
+  });
+
+  const roomDock = document.getElementById("room-dock");
+  const dockToggle = document.getElementById("toggle-destinations");
+  dockToggle.addEventListener("click", () => {
+    const collapsed = roomDock.classList.toggle("collapsed");
+    dockToggle.textContent = collapsed ? "⌃" : "⌄";
+    dockToggle.setAttribute("aria-label", collapsed ? "Expand room list" : "Collapse room list");
+  });
+
+  let lastHfov = initialHfov;
+  window.addEventListener("resize", () => {
+    const next = getResponsiveHfov();
+    if (Math.abs(next - lastHfov) > 8) {
+      viewer.setHfov(next);
+      lastHfov = next;
+    }
+    viewer.resize();
+  });
+
+  window.setTimeout(() => {
+    if (!document.getElementById("welcome-screen").classList.contains("dismissed")) return;
+    document.getElementById("instruction").classList.add("hide");
+  }, 6500);
+</script>
 </body>
-
 </html>
